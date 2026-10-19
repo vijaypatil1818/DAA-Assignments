@@ -1,164 +1,175 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
-public class ExamTimetable {
-    static class Room {
-        String name;
-        int capacity;
+import java.util.*;
 
-        Room(String name, int capacity) {
-            this.name = name;
-            this.capacity = capacity;
-        }
-    }
+public class GraphColoring {
+
+    static String[] colorNames = {
+        "Red", "Green", "Yellow", "Blue",
+        "Magenta", "Cyan", "Orange", "Purple"
+    };
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
         System.out.print("Enter number of courses: ");
-        int numCourses = sc.nextInt();
-
-        String[] courses = new String[numCourses];
-        Map<String, Integer> courseIndex = new HashMap<>();
-
-        System.out.println("Enter course codes:");
-        for (int i = 0; i < numCourses; i++) {
-            courses[i] = sc.next();
-            courseIndex.put(courses[i], i);
-        }
+        int n = sc.nextInt();
 
         System.out.print("Enter number of students: ");
-        int numStudents = sc.nextInt();
+        int m = sc.nextInt();
 
-        int[] studentCount = new int[numCourses];
-        int[][] adj = new int[numCourses][numCourses];
+        if (n <= 0 || m < 0) {
+            System.out.println("Invalid number of courses or students!");
+            sc.close();
+            return;
+        }
 
-        System.out.println("Enter student enrollments (student_id count course1 course2 ...):");
-        for (int i = 0; i < numStudents; i++) {
-            String studentId = sc.next();
-            int count = sc.nextInt();
-            List<Integer> enrolled = new ArrayList<>();
+        boolean[][] conflict = new boolean[n][n];
 
-            for (int j = 0; j < count; j++) {
-                String courseCode = sc.next();
-                if (courseIndex.containsKey(courseCode)) {
-                    int courseIdx = courseIndex.get(courseCode);
-                    studentCount[courseIdx]++;
-                    enrolled.add(courseIdx);
+        System.out.println("\nEnter courses for each student.");
+        System.out.println(
+            "Enter the number of courses followed by course IDs (1 to "
+            + n + ")."
+        );
+
+        // Input courses and build the conflict graph
+        for (int i = 0; i < m; i++) {
+            System.out.print(
+                "\nStudent " + (i + 1) + " - number of courses: "
+            );
+            int k = sc.nextInt();
+
+            if (k < 0 || k > n) {
+                System.out.println("Invalid number of courses!");
+                sc.close();
+                return;
+            }
+
+            System.out.print("Enter course IDs: ");
+
+            boolean[] enrolled = new boolean[n];
+
+            for (int j = 0; j < k; j++) {
+                int course = sc.nextInt();
+
+                if (course < 1 || course > n) {
+                    System.out.println("Invalid course ID!");
+                    sc.close();
+                    return;
+                }
+
+                enrolled[course - 1] = true;
+            }
+
+            // Courses taken by the same student conflict
+            for (int u = 0; u < n; u++) {
+                for (int v = u + 1; v < n; v++) {
+                    if (enrolled[u] && enrolled[v]) {
+                        conflict[u][v] = true;
+                        conflict[v][u] = true;
+                    }
+                }
+            }
+        }
+
+        // Calculate the degree of each course
+        List<int[]> courses = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            int degree = 0;
+
+            for (int j = 0; j < n; j++) {
+                if (conflict[i][j]) {
+                    degree++;
                 }
             }
 
-            for (int a = 0; a < enrolled.size(); a++) {
-                for (int b = a + 1; b < enrolled.size(); b++) {
-                    int u = enrolled.get(a);
-                    int v = enrolled.get(b);
-                    adj[u][v] = 1;
-                    adj[v][u] = 1;
-                }
+            // Store {degree, course index}
+            courses.add(new int[]{degree, i});
+        }
+
+        // Welsh-Powell: sort by decreasing degree.
+        // Break ties by course index for predictable output.
+        courses.sort((a, b) -> {
+            if (a[0] != b[0]) {
+                return Integer.compare(b[0], a[0]);
             }
-        }
+            return Integer.compare(a[1], b[1]);
+        });
 
-        System.out.print("Enter number of available classrooms: ");
-        int numRooms = sc.nextInt();
-
-        Room[] rooms = new Room[numRooms];
-        System.out.println("Enter room name and capacity:");
-        for (int i = 0; i < numRooms; i++) {
-            String name = sc.next();
-            int capacity = sc.nextInt();
-            rooms[i] = new Room(name, capacity);
-        }
-
-        int[] degree = new int[numCourses];
-        for (int i = 0; i < numCourses; i++) {
-            for (int j = 0; j < numCourses; j++) {
-                if (adj[i][j] == 1) {
-                    degree[i]++;
-                }
-            }
-        }
-
-        Integer[] order = new Integer[numCourses];
-        for (int i = 0; i < numCourses; i++) {
-            order[i] = i;
-        }
-
-        Arrays.sort(order, (a, b) -> Integer.compare(degree[b], degree[a]));
-
-        int[] color = new int[numCourses];
+        // Greedy graph coloring
+        int[] color = new int[n];
         Arrays.fill(color, -1);
 
-        for (int idx = 0; idx < numCourses; idx++) {
-            int u = order[idx];
-            boolean[] used = new boolean[numCourses + 1];
+        int totalSlots = 0;
 
-            for (int v = 0; v < numCourses; v++) {
-                if (adj[u][v] == 1 && color[v] != -1) {
+        for (int[] course : courses) {
+            int u = course[1];
+            boolean[] used = new boolean[n];
+
+            // Find colors already used by neighboring courses
+            for (int v = 0; v < n; v++) {
+                if (conflict[u][v] && color[v] != -1) {
                     used[color[v]] = true;
                 }
             }
 
-            int assignedColor = 0;
-            while (used[assignedColor]) {
-                assignedColor++;
-            }
-            color[u] = assignedColor;
-        }
-
-        int maxColor = 0;
-        for (int i = 0; i < numCourses; i++) {
-            maxColor = Math.max(maxColor, color[i]);
-        }
-
-        System.out.println("\nExam Timetable Schedule:");
-        System.out.println("Total Time Slots Required: " + (maxColor + 1));
-        System.out.println();
-
-        String[] assignedRoom = new String[numCourses];
-        Arrays.fill(assignedRoom, "Unassigned");
-
-        for (int slot = 0; slot <= maxColor; slot++) {
-            List<Integer> slotCourses = new ArrayList<>();
-            for (int i = 0; i < numCourses; i++) {
-                if (color[i] == slot) {
-                    slotCourses.add(i);
-                }
+            // Assign the smallest available color
+            int c = 0;
+            while (c < n && used[c]) {
+                c++;
             }
 
-            slotCourses.sort((a, b) -> Integer.compare(studentCount[b], studentCount[a]));
-            boolean[] roomOccupied = new boolean[numRooms];
+            color[u] = c;
+            totalSlots = Math.max(totalSlots, c + 1);
+        }
 
-            for (int cIdx : slotCourses) {
-                int needed = studentCount[cIdx];
-                int bestRoom = -1;
-                int minCapacityFit = Integer.MAX_VALUE;
+        // Display examination timetable
+        System.out.println("\n--- Examination Timetable ---");
+        System.out.printf("%-10s %-12s %-10s%n",
+                          "Course", "Time Slot", "Color");
 
-                for (int r = 0; r < numRooms; r++) {
-                    if (!roomOccupied[r] && rooms[r].capacity >= needed) {
-                        if (rooms[r].capacity < minCapacityFit) {
-                            minCapacityFit = rooms[r].capacity;
-                            bestRoom = r;
-                        }
-                    }
-                }
+        for (int i = 0; i < n; i++) {
+            System.out.printf("%-10s %-12s %-10s%n",
+                "C" + (i + 1),
+                "Slot " + (color[i] + 1),
+                colorNames[color[i] % colorNames.length]
+            );
+        }
 
-                if (bestRoom != -1) {
-                    assignedRoom[cIdx] = rooms[bestRoom].name;
-                    roomOccupied[bestRoom] = true;
+        System.out.println(
+            "\nTotal time slots required: " + totalSlots
+        );
+
+        // Display graph coloring
+        System.out.println("\n--- Graph Coloring ---");
+
+        for (int i = 0; i < n; i++) {
+            System.out.println(
+                "[ C" + (i + 1) + " ] --> Slot "
+                + (color[i] + 1)
+                + " | Color: "
+                + colorNames[color[i] % colorNames.length]
+            );
+        }
+
+        // Display conflict graph edges
+        System.out.println("\n--- Conflict Graph Edges ---");
+
+        boolean hasEdges = false;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (conflict[i][j]) {
+                    System.out.println(
+                        "C" + (i + 1) + " -- C" + (j + 1)
+                    );
+                    hasEdges = true;
                 }
             }
         }
 
-        for (int i = 0; i < numCourses; i++) {
-            System.out.println("Course: " + courses[i]
-                    + " -> Time Slot: Slot " + (color[i] + 1)
-                    + " -> Room: " + assignedRoom[i]
-                    + " (Students: " + studentCount[i] + ")");
+        if (!hasEdges) {
+            System.out.println("No conflicts between courses.");
         }
 
         sc.close();
