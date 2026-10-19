@@ -1,5 +1,11 @@
 Sample Input
 ------------
+Enter number of courses: Enter course codes:
+Enter number of students: Enter student enrollments (student_id count course1 course2 ...):
+Enter number of available classrooms: Enter room name and capacity:
+
+Exam Timetable Schedule:
+
 5
 CS101
 MA101
@@ -20,17 +26,11 @@ RoomC 20
 
 Sample Output
 ------------
-Enter number of courses: Enter course codes:
-Enter number of students: Enter student enrollments (student_id count course1 course2 ...):
-Enter number of available classrooms: Enter room name and capacity:
 
-Exam Timetable Schedule:
 Total Time Slots Required: 4
-
 Course: CS101 -> Time Slot: Slot 1 -> Room: RoomC (Students: 3)
 Course: MA101 -> Time Slot: Slot 2 -> Room: RoomC (Students: 2)
 Course: PH101 -> Time Slot: Slot 3 -> Room: RoomC (Students: 2)
 Course: CS102 -> Time Slot: Slot 2 -> Room: RoomC (Students: 3)
 Course: EE101 -> Time Slot: Slot 3 -> Room: RoomC (Students: 4)
 
-Note: The exact slot assignment can vary if course ordering differs in a tie. This sample output is illustrative; verify against the provided input when running the program.
