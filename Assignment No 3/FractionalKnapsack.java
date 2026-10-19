@@ -1,142 +1,123 @@
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
 
-public class FractionalKnapsack
-{
-    // Sorting according to ratio (descending order)
-    static void sortItems(int[] profit, int[] weight, float[] ratio, int n)
-    {
-        for(int i = 0; i < n - 1; i++)
-        {
-            for(int j = i + 1; j < n; j++)
-            {
-                if(ratio[i] < ratio[j])
-                {
-                    // Swap ratio
-                    float temp = ratio[i];
-                    ratio[i] = ratio[j];
-                    ratio[j] = temp;
+public class FractionalKnapsack {
 
-                    // Swap profit
-                    int p = profit[i];
-                    profit[i] = profit[j];
-                    profit[j] = p;
+    static class Item {
+        String name;
+        double weight;
+        double value;
+        boolean divisible;
+        int priority;
 
-                    // Swap weight
-                    int w = weight[i];
-                    weight[i] = weight[j];
-                    weight[j] = w;
-                }
-            }
+        Item(String name, double weight, double value, boolean divisible, int priority) {
+            this.name = name;
+            this.weight = weight;
+            this.value = value;
+            this.divisible = divisible;
+            this.priority = priority;
+        }
+
+        double valuePerWeight() {
+            return value / weight;
         }
     }
 
-    static float fractionalKnapsack(int capacity, int[] profit, int[] weight,
-                                    float[] ratio, int n)
-    {
-        float totalProfit = 0;
+    static Comparator<Item> itemComparator = (a, b) -> {
+        if (a.priority == b.priority) {
+            return Double.compare(b.valuePerWeight(), a.valuePerWeight());
+        }
+        return Integer.compare(a.priority, b.priority);
+    };
 
-        System.out.println("\nSelection Process:");
+    static double fractionalKnapsack(List<Item> items, double capacity, double[] totalWeightCarried) {
+        items.sort(itemComparator);
 
-        for(int i = 0; i < n; i++)
-        {
-            if(capacity >= weight[i])
-            {
-                // Take complete item
-                capacity = capacity - weight[i];
-                totalProfit = totalProfit + profit[i];
+        System.out.println("\nSorted Items (by Priority, then Value/Weight):");
+        System.out.printf("%-20s %-10s %-10s %-12s %-15s %-15s%n",
+                "Item", "Weight", "Value", "Priority", "Value/Weight", "Type");
 
-                System.out.println("Take full item "
-                        + (i + 1)
-                        + " Profit = "
-                        + profit[i]
-                        + " Weight = "
-                        + weight[i]);
-            }
-            else
-            {
-                // Take fraction of item
-                float fraction = (float) capacity / weight[i];
+        for (Item item : items) {
+            System.out.printf("%-20s %-10.2f %-10.2f %-12d %-15.2f %-15s%n",
+                    item.name, item.weight, item.value, item.priority,
+                    item.valuePerWeight(), item.divisible ? "Divisible" : "Indivisible");
+        }
 
-                float addedProfit = profit[i] * fraction;
+        double totalValue = 0.0;
+        totalWeightCarried[0] = 0.0;
 
-                totalProfit = totalProfit + addedProfit;
+        System.out.println("\nItems selected for transport:");
 
-                System.out.println("Take "
-                        + (fraction * 100)
-                        + "% of item "
-                        + (i + 1)
-                        + " Profit added = "
-                        + addedProfit);
-
+        for (Item item : items) {
+            if (capacity <= 0) {
                 break;
             }
+
+            if (item.divisible) {
+                double takenWeight = Math.min(item.weight, capacity);
+                double takenValue = item.valuePerWeight() * takenWeight;
+                totalValue += takenValue;
+                capacity -= takenWeight;
+                totalWeightCarried[0] += takenWeight;
+
+                System.out.printf(" - %s: %.2f kg, Utility = %.2f, Priority = %d, Type = Divisible%n",
+                        item.name, takenWeight, takenValue, item.priority);
+            } else if (item.weight <= capacity) {
+                totalValue += item.value;
+                capacity -= item.weight;
+                totalWeightCarried[0] += item.weight;
+
+                System.out.printf(" - %s: %.2f kg, Utility = %.2f, Priority = %d, Type = Indivisible%n",
+                        item.name, item.weight, item.value, item.priority);
+            }
         }
 
-        return totalProfit;
+        return totalValue;
     }
 
-    public static void main(String[] args)
-    {
-        Scanner sc = new Scanner(System.in);
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-        int n;
-        int capacity;
+        System.out.print("Enter number of relief items: ");
+        int n = scanner.nextInt();
+        scanner.nextLine();
 
-        System.out.print("Enter number of items: ");
-        n = sc.nextInt();
+        List<Item> items = new ArrayList<>();
 
-        int[] profit = new int[n];
-        int[] weight = new int[n];
-        float[] ratio = new float[n];
+        for (int i = 0; i < n; i++) {
+            System.out.println("\nItem #" + (i + 1) + ":");
 
-        System.out.println("\nEnter profit and weight:");
+            System.out.print("Name: ");
+            String name = scanner.nextLine();
 
-        for(int i = 0; i < n; i++)
-        {
-            System.out.print("Item " + (i + 1) + " Profit: ");
-            profit[i] = sc.nextInt();
+            System.out.print("Weight (kg): ");
+            double weight = scanner.nextDouble();
 
-            System.out.print("Item " + (i + 1) + " Weight: ");
-            weight[i] = sc.nextInt();
+            System.out.print("Utility Value: ");
+            double value = scanner.nextDouble();
 
-            ratio[i] = (float) profit[i] / weight[i];
+            System.out.print("Is it divisible? (1 = Yes, 0 = No): ");
+            int divisibleInt = scanner.nextInt();
+
+            System.out.print("Priority (1 = High, 2 = Medium, 3 = Low): ");
+            int priority = scanner.nextInt();
+            scanner.nextLine();
+
+            items.add(new Item(name, weight, value, divisibleInt == 1, priority));
         }
 
-        System.out.print("\nEnter knapsack capacity: ");
-        capacity = sc.nextInt();
+        System.out.print("\nEnter maximum weight capacity of the boat (in kg): ");
+        double capacity = scanner.nextDouble();
 
-        System.out.println("\nBefore Sorting:");
+        double[] totalWeightCarried = new double[1];
+        double maxValue = fractionalKnapsack(items, capacity, totalWeightCarried);
 
-        for(int i = 0; i < n; i++)
-        {
-            System.out.println("Item " + (i + 1)
-                    + " Profit = " + profit[i]
-                    + " Weight = " + weight[i]
-                    + " Ratio = " + ratio[i]);
-        }
+        System.out.println("\n===== Final Report =====");
+        System.out.printf("Total weight carried: %.2f kg%n", totalWeightCarried[0]);
+        System.out.printf("Total utility value carried: %.2f units%n", maxValue);
 
-        sortItems(profit, weight, ratio, n);
-
-        System.out.println("\nAfter Sorting (by Ratio):");
-
-        for(int i = 0; i < n; i++)
-        {
-            System.out.println("Item " + (i + 1)
-                    + " Profit = " + profit[i]
-                    + " Weight = " + weight[i]
-                    + " Ratio = " + ratio[i]);
-        }
-
-        float answer = fractionalKnapsack(
-                capacity,
-                profit,
-                weight,
-                ratio,
-                n
-        );
-
-        System.out.println("\nMaximum Profit = " + answer);
-
-        sc.close();
+        scanner.close();
     }
 }
