@@ -5,7 +5,6 @@ MA101
 PH101
 CS102
 EE101
-
 Enter number of students: 6
 Enter student enrollments (student_id count course1 course2 ...):
 S1 3 CS101 MA101 PH101
@@ -14,22 +13,17 @@ S3 2 MA101 EE101
 S4 2 PH101 CS102
 S5 2 CS102 EE101
 S6 2 CS101 EE101
-
 Enter number of available classrooms: 3
 Enter room name and capacity:
 RoomA 40
 RoomB 30
 RoomC 20
 
-Exam Timetable Schedule
-=======================
+Exam Timetable Schedule:
+Total Time Slots Required: 3
 
-Total Time Slots Required: 4
-
-Course   Time Slot   Room     Students
---------------------------------------
-CS101    Slot 1      RoomC    3
-MA101    Slot 2      RoomC    2
-PH101    Slot 3      RoomC    2
-CS102    Slot 2      RoomC    3
-EE101    Slot 3      RoomC    4
+Course: CS101 -> Time Slot: Slot 1 -> Room: RoomC (Students: 3)
+Course: MA101 -> Time Slot: Slot 2 -> Room: RoomC (Students: 2)
+Course: PH101 -> Time Slot: Slot 3 -> Room: RoomC (Students: 2)
+Course: CS102 -> Time Slot: Slot 2 -> Room: RoomB (Students: 3)
+Course: EE101 -> Time Slot: Slot 1 -> Room: RoomB (Students: 3)
