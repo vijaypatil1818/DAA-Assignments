@@ -1,29 +1,48 @@
 Enter number of courses: 5
-Enter course codes:
-CS101
-MA101
-PH101
-CS102
-EE101
 Enter number of students: 6
-Enter student enrollments (student_id count course1 course2 ...):
-S1 3 CS101 MA101 PH101
-S2 2 CS101 CS102
-S3 2 MA101 EE101
-S4 2 PH101 CS102
-S5 2 CS102 EE101
-S6 2 CS101 EE101
-Enter number of available classrooms: 3
-Enter room name and capacity:
-RoomA 40
-RoomB 30
-RoomC 20
 
-Exam Timetable Schedule:
-Total Time Slots Required: 3
+Student 1 - number of courses: 3
+Enter course IDs: 1 2 3
 
-Course: CS101 -> Time Slot: Slot 1 -> Room: RoomC (Students: 3)
-Course: MA101 -> Time Slot: Slot 2 -> Room: RoomC (Students: 2)
-Course: PH101 -> Time Slot: Slot 3 -> Room: RoomC (Students: 2)
-Course: CS102 -> Time Slot: Slot 2 -> Room: RoomB (Students: 3)
-Course: EE101 -> Time Slot: Slot 1 -> Room: RoomB (Students: 3)
+Student 2 - number of courses: 2
+Enter course IDs: 1 4
+
+Student 3 - number of courses: 2
+Enter course IDs: 2 5
+
+Student 4 - number of courses: 2
+Enter course IDs: 3 4
+
+Student 5 - number of courses: 2
+Enter course IDs: 4 5
+
+Student 6 - number of courses: 2
+Enter course IDs: 1 5
+
+
+--- Examination Timetable ---
+Course     Time Slot    Color
+C1         Slot 1       Red
+C2         Slot 2       Green
+C3         Slot 2       Green
+C4         Slot 3       Yellow
+C5         Slot 3       Yellow
+
+Total time slots required: 3
+
+--- Graph Coloring ---
+[ C1 ] --> Slot 1 | Color: Red
+[ C2 ] --> Slot 2 | Color: Green
+[ C3 ] --> Slot 2 | Color: Green
+[ C4 ] --> Slot 3 | Color: Yellow
+[ C5 ] --> Slot 3 | Color: Yellow
+
+--- Conflict Graph Edges ---
+C1 -- C2
+C1 -- C3
+C1 -- C4
+C1 -- C5
+C2 -- C3
+C2 -- C5
+C3 -- C4
+C4 -- C5
